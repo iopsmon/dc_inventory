@@ -1,0 +1,218 @@
+<form theme="dark">
+  <label>inventory</label>
+  <fieldset submitButton="false">
+    <input type="time" token="global_time_tok" searchWhenChanged="true">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="global_node_tok" searchWhenChanged="true">
+      <label>Host</label>
+      <fieldForLabel>node</fieldForLabel>
+      <fieldForValue>node</fieldForValue>
+      <search>
+        <query>| inputlookup  inventory_col_lookup 
+| eval node=lower(node) | 
+table node | dedup node</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <choice value="">none</choice>
+      <default></default>
+    </input>
+    <input type="text" token="global_node_tok">
+      <label>Host Search</label>
+    </input>
+    <input type="radio" token="system_type_tok" searchWhenChanged="true">
+      <label>Total Systems</label>
+      <fieldForLabel>system</fieldForLabel>
+      <fieldForValue>system</fieldForValue>
+      <search>
+        <query>index=inventory sourcetype=system:inventory | table system | dedup system</query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>server</title>
+      <single>
+        <search>
+          <query>| inputlookup inventory_col_lookup 
+| search node=$global_node_tok$
+| eval node=lower(node)
+| fields node 
+| head 1</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">before</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>agent status</title>
+      <table>
+        <search>
+          <query>| metadata type=hosts index=_internal
+| search host=$global_node_tok$
+| eval host=lower(host)
+| table host, recentTime 
+| eval age=now()-recentTime 
+| eval status=if(age&lt;300,"UP","DOWN")
+| table host, status</query>
+          <earliest>-60m@m</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+        <format type="color" field="status">
+          <colorPalette type="expression">if (like(value,"%DOWN%"),"#dc4e41","#53A051")</colorPalette>
+        </format>
+      </table>
+    </panel>
+    <panel>
+      <title>Total Servers $system_type_tok$</title>
+      <single>
+        <search>
+          <query>| inputlookup inventory_col_lookup
+| fields, system
+| search system=$system_type_tok$
+| stats dc(node) count</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="drilldown">all</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x53a051"]</option>
+        <option name="rangeValues">[0]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+        <drilldown>
+          <link target="_blank">search?q=%7C%20inputlookup%20inventory_col_lookup%20%0A%7C%20fields%20_time,%20id,%20ip,%20machine,%20node,%20processor,%20release,%20system%0A%7C%20search%20system=$system_type_tok$%20%0A%7C%20table%20_time,%20id,%20ip,%20machine,%20node,%20processor,%20release,%20system%20%0A%7C%20dedup%20node&amp;earliest=-24h@h&amp;latest=now</link>
+        </drilldown>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>inventory list</title>
+      <table>
+        <search>
+          <query>| inputlookup inventory_col_lookup
+| search node=splunk2.ops.com
+| lookup  linux_os_csv_lookup release OUTPUT release, os_version, os_type
+| table _time, node, ip, system, os_version, os_type, id, release, version, processor,  
+| dedup node</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Server Resources (Avg)</title>
+      <single>
+        <search>
+          <query>| mstats avg(_value) AS cpu where index=linux_metric  AND metric_name="cpu.system"  host=$global_node_tok$ span=1h
+| join type=left _time [
+   | mstats avg(_value) AS df_free where index=linux_metric AND  metric_name="df.free"  host=$global_node_tok$ span=1h
+ ]
+ | join type=left _time [
+   | mstats avg(_value) AS mem_free where index=linux_metric AND  metric_name="memory.free"  host=$global_node_tok$ span=1h
+ ]</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">large</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">percent</option>
+        <option name="trendInterval">-5m</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>data volume</title>
+      <table>
+        <search>
+          <query>index=_internal source=*metrics.log* group=tcpout_connections 
+| search host=splunk1.ops.com
+| eval KBps=tcp_Bps/1024 
+| timechart sum(KBps) as KBps span=15m by host| eval MB=KBps*_span/1024 | fields - KBps</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
