@@ -198,7 +198,7 @@ table node | dedup node</query>
       <table>
         <search>
           <query>index=_internal source=*metrics.log* group=tcpout_connections 
-| search host=splunk1.ops.com
+| search host=global_node_tok
 | eval KBps=tcp_Bps/1024 
 | timechart sum(KBps) as KBps span=15m by host| eval MB=KBps*_span/1024 | fields - KBps</query>
           <earliest>-24h@h</earliest>
@@ -209,6 +209,7 @@ table node | dedup node</query>
         <option name="dataOverlayMode">none</option>
         <option name="drilldown">none</option>
         <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
         <option name="rowNumbers">false</option>
         <option name="totalsRow">false</option>
         <option name="wrap">true</option>
