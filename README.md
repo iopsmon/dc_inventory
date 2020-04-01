@@ -6,9 +6,9 @@ It uses a python script, which runs on the server, the output sends the data to 
 
 For this app, I have set the polling for every once a day at 12:00 day, afte this a saved search will run at 01:00am and push the data into a kv store. The KV store is used for tables and is much faster.
 
-The dashboard will also provide soem stats on server resources, if you are collecting server metrics data, if not then its ok no data will be shown.
+The dashboard will also provide some stats on server resources, if you are collecting server metrics data, if not then its ok no data will be shown.
 
-The python script in the app will generate event data into a file which is contains, a unique id, node name, ip address, system type, processor information, it will then use a look up for for Linux OS types.
+The python script in the app will generate event data into a file which contains, a unique host id, node name, ip address, system type, processor information, it will then use a look up for for Linux OS types.
 
 ![](images/inventory.jpg)
 
@@ -16,18 +16,19 @@ Dashboard Features:
 
 - inventory list
 - agent status
+- last event
 - total systems
 - data volume
 - server resources - (basic cpu, mem, disk avg)
 
 Application Features:
 
-Provides Server Inventory Information
+Provides Server Inventory Information, great for tracking assets
 
 Data Config:
-- Metric Data 
+- Event Data
 - data kept for 14 days
-- index=invemtory
+- index=inventory
 - index size = 100MB
 
 Python Script for Data:-
@@ -38,12 +39,12 @@ Requirements:
 - DC_inventory App
 - Splunk 7.1 + (Metrics Workspace)
 - TA-linux-metrics (optional)
-- Linux Server Running Splunk AIO or SH
-- python 3 installed on the target servers (Windows Linux)
+- Linux Server Running Splunk 7.1 X on AIO or SH
+- Python 3 installed on the target servers (Windows Linux) used to collect system inventory data
 
 Install:
 
-This app should be installed only on a Search Head, or All in one Splunk instance, the indexes.conf file needs to be deployed to the indexing layer or all in one server and the DC_inventory deployed to the Linux or Windows taregt servers, they alos need to have python installed. Optionally the A-linux-metrics needs to be deployed to the target Linux servers as well.
+This app should be installed on a Search Head for dashboards, or All in one Splunk instance. The indexes.conf file needs to be deployed to the indexing layer, if its a distributed architecture. The DC_inventory deployed to the Linux or Windows taregt servers where the script will run and collect the system data. The target systems will need to have python installed. Optionally the linux-metrics can be deployed to the target Linux servers to collect metric data. Windows Metric collection was not setup at the time, but will be looked at in the future, but this can be easly done via various apps from Splunkbase.
 
 This app was only tested on Splunk instance running on Linux.
 
@@ -66,3 +67,4 @@ lookup file = linuxos_versions.csv
 
 Use:
 Login to Splunk and go DC_inventory, you should see the dashboards, select the target server of interest and should see data.
+
