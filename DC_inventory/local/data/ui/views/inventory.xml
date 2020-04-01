@@ -70,6 +70,22 @@ table node | dedup node</query>
       </single>
     </panel>
     <panel>
+      <title>last event time</title>
+      <single>
+        <search>
+          <query>index=_internal TERM($global_node_tok$) | stats latest(_time) as _time
+| eval lastseen=strftime(_time, "%b %d %Y %H:%M:%S")</query>
+          <earliest>$global_time_tok.earliest$</earliest>
+          <latest>$global_time_tok.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
       <title>agent status</title>
       <table>
         <search>
