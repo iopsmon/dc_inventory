@@ -8,6 +8,8 @@ For this app, I have set the polling for every once a day at 12:00 day, afte thi
 
 The dashboard will also provide soem stats on server resources, if you are collecting server metrics data, if not then its ok no data will be shown.
 
+The python script in the app will generate event data into a file which is contains, a unique id, node name, ip address, system type, processor information, it will then use a look up for for Linux OS types.
+
 ![](images/inventory.jpg)
 
 Dashboard Features:
@@ -32,7 +34,8 @@ Python Script for Data:-
 - dc_os_inventory_v0.5.py
 
 Requirements:
-- DC_inventory App 
+- UF agent running on the target node
+- DC_inventory App
 - Splunk 7.1 + (Metrics Workspace)
 - TA-linux-metrics (optional)
 - Linux Server Running Splunk AIO or SH
