@@ -16,8 +16,7 @@ Dashboard Features:
 - agent status
 - total systems
 - data volume
-- server resources - (basic avg)
-- disk.io
+- server resources - (basic cpu, mem, disk avg)
 
 Application Features:
 
